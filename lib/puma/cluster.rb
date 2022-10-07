@@ -507,14 +507,16 @@ module Puma
                 when "e"
                   # external term, see worker method, Signal.trap "SIGTERM"
                   w.instance_variable_set :@term, true
+                  log "- External term from #{w.index} (pid: #{pid}) terminated, phase: #{w.phase}"
                 when "t"
                   w.term unless w.term?
+                  log "- Worker #{w.index} (pid: #{pid}) terminating, phase: #{w.phase}"
                   force_check = true
                 when "p"
                   w.ping!(result.sub(/^\d+/,'').chomp)
                 end
               else
-                log "! Out-of-sync worker list, no #{pid} worker"
+                log "! Out-of-sync worker list, no #{pid} worker (got :#{req})"
               end
             end
 
