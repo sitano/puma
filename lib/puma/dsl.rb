@@ -671,6 +671,11 @@ module Puma
       @options[:worker_shutdown_timeout] = Integer(timeout)
     end
 
+    # Enforce cluster to restart workers immediatelly
+    def worker_fast_restart(answer=true)
+      @options[:worker_fast_restart] = answer
+    end
+
     # When set to true (the default), workers accept all requests
     # and queue them before passing them to the handlers.
     # When set to false, each worker process accepts exactly as

@@ -511,6 +511,7 @@ module Puma
                 when "t"
                   w.term unless w.term?
                   log "- Worker #{w.index} (pid: #{pid}) terminating, phase: #{w.phase}"
+                  respawn_exiting_worker(w) if @options[:worker_fast_restart] && @status == :run
                   force_check = true
                 when "p"
                   w.ping!(result.sub(/^\d+/,'').chomp)
@@ -551,6 +552,26 @@ module Puma
           true # child is already terminated
         end
       end
+    end
+
+    def wait_worker(pid)
+      # not necessary but let's assume we reap them
+      _ = Process.wait(pid)
+    rescue Errno::ECHILD
+      # child is already terminated
+    end
+
+    # wait until the worker exit and respawn
+    def respawn_exiting_worker(w)
+      wait_worker w.pid
+
+      log "- Worker #{w.index} (pid: #{w.pid}) exited, phase: #{w.phase}"
+
+      # cleanup workers set
+      @workers.reject! do |t| t.pid == w.pid end
+
+      # respawn
+      spawn_workers
     end
   end
 end
